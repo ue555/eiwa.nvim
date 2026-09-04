@@ -1,0 +1,71 @@
+*eiwa.nvim*                              Native translation UI for Neovim
+
+==============================================================================
+INTRODUCTION                                                   *eiwa-intro*
+
+eiwa.nvim provides a native Neovim conversation interface intended for
+English-to-Japanese translation. Translation itself is not implemented yet.
+The current release includes the UI, session model, asynchronous Go agent,
+streaming protocol, and cancellation.
+
+Requires Neovim 0.10 or later and LuaJIT 2.1.
+
+==============================================================================
+SETUP                                                           *eiwa-setup*
+
+>
+  require("eiwa").setup({
+    command = nil,
+    window = {
+      position = "float",
+      width = 0.8,
+      height = 0.8,
+      split_width = 0.4,
+      split_height = 0.35,
+      input_height = 3,
+      border = "rounded",
+    },
+    history = {
+      max_messages = 100,
+    },
+    keymaps = {
+      submit = "<CR>",
+      cancel = "<C-c>",
+      close = "q",
+    },
+  })
+<
+window.position accepts "float", "right", "bottom", or "tab".
+
+==============================================================================
+COMMANDS                                                     *eiwa-commands*
+
+:Eiwa             Toggle the Eiwa window.
+:EiwaClose        Close the window while retaining session history.
+:EiwaClear        Clear session history.
+:EiwaCancel       Cancel the active request.
+:EiwaNewSession   Cancel the active request and clear history.
+
+==============================================================================
+BACKEND                                                       *eiwa-backend*
+
+Install a release binary, falling back to a local Go build:
+>
+  scripts/install-agent.sh
+<
+Build the Go backend for the current platform:
+>
+  scripts/build.sh
+<
+Build Linux amd64, Linux arm64, and Apple Silicon binaries:
+>
+  scripts/build.sh --all
+<
+The backend is resolved in this order:
+
+1. The setup() command option.
+2. eiwa-agent in $PATH.
+3. bin/eiwa-agent-{os}-{arch} in the plugin.
+4. bin/eiwa-agent in the plugin.
+
+vim:tw=78:ts=8:noet:ft=help:norl:
