@@ -4,9 +4,8 @@
 INTRODUCTION                                                   *eiwa-intro*
 
 eiwa.nvim provides a native Neovim conversation interface intended for
-English-to-Japanese translation. Translation itself is not implemented yet.
-The current release includes the UI, session model, asynchronous Go agent,
-streaming protocol, and cancellation.
+English-to-Japanese translation through an HTTP API. The asynchronous Go agent
+connects to http://127.0.0.1:8000/translate by default. Start the API separately.
 
 Requires Neovim 0.10 or later and LuaJIT 2.1.
 
@@ -16,6 +15,12 @@ SETUP                                                           *eiwa-setup*
 >
   require("eiwa").setup({
     command = nil,
+    api = {
+      endpoint = "http://127.0.0.1:8000/translate",
+      timeout = 90,
+      style = "source",
+      glossary = {},
+    },
     window = {
       position = "float",
       width = 0.8,
@@ -36,6 +41,10 @@ SETUP                                                           *eiwa-setup*
   })
 <
 window.position accepts "float", "right", "bottom", or "tab".
+api.timeout is in seconds; api.style accepts "source", "polite", or "plain".
+api.glossary maps English terms to Japanese translations. Restart Neovim after
+changing settings. Complete translations appear after API generation finishes.
+Cancellation stops HTTP waiting; server-side generation may continue briefly.
 
 ==============================================================================
 COMMANDS                                                     *eiwa-commands*
@@ -56,6 +65,10 @@ Install a release binary, falling back to a local Go build:
 Build the Go backend for the current platform:
 >
   scripts/build.sh
+<
+On Windows, use:
+>
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1
 <
 Build Linux amd64, Linux arm64, and Apple Silicon binaries:
 >

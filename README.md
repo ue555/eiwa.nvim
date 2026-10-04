@@ -2,13 +2,31 @@
 
 > [!WARNING]
 > **This plugin is under active development.** Its API, configuration, and
-> behavior may change without notice. The translation provider is not
-> implemented yet.
+> behavior may change without notice.
 
 A native Neovim conversation UI intended for English-to-Japanese translation.
-The translation provider is deliberately not implemented yet; this version
-implements the complete UI, session, process, streaming, and cancellation
-foundation.
+The Go agent connects to an English-to-Japanese HTTP API. The default endpoint
+is `http://127.0.0.1:8000/translate`. Start the API separately, then open `:Eiwa`
+and submit English text. See [local Windows setup](README_ja.md) for this PC.
+
+Configure the API with:
+
+```lua
+require("eiwa").setup({
+  api = {
+    endpoint = "http://127.0.0.1:8000/translate",
+    timeout = 90, -- seconds
+    style = "source", -- source, polite, plain
+    glossary = { ["working tree"] = "作業ツリー" },
+  },
+})
+```
+
+Windows users can build with `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1`.
+The agent automatically resolves Windows `.exe` binaries. Restart Neovim after
+changing API settings. The API returns a complete translation, displayed after
+generation finishes. Cancellation stops HTTP waiting, but API-side GPU work may
+continue and temporarily cause HTTP 503 on the next request.
 
 ## Features
 
@@ -129,9 +147,13 @@ input and output.
 {"type":"shutdown"}
 ```
 
-The placeholder backend emits `started`, `assistant_delta`, and
-`assistant_done` events. It currently displays
-`Translation backend is not implemented yet.` instead of translating text.
+The HTTP backend posts `text`, `style`, and optional `glossary`, then emits
+`started`, one `assistant_delta` containing the API's `translation`, and
+`assistant_done`. Errors include the API's structured error message. A
+placeholder backend remains available with `eiwa-agent serve --provider placeholder`
+for UI development. CLI options include `--endpoint`, `--timeout`, `--style`, and
+`--glossary`; defaults can also use `EIWA_API_URL`, `EIWA_API_TIMEOUT`,
+`EIWA_API_STYLE`, and `EIWA_API_GLOSSARY` environment variables.
 
 ## License
 

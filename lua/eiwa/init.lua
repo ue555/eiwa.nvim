@@ -57,7 +57,7 @@ local function ensure_process()
         render()
       end
     end,
-  })
+  }, config.values.api)
 end
 
 function M.setup(opts)

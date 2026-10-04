@@ -13,7 +13,7 @@ end
 
 local function platform()
   local uname = (vim.uv or vim.loop).os_uname()
-  local os_name = uname.sysname == "Darwin" and "darwin" or uname.sysname:lower()
+  local os_name = vim.fn.has("win32") == 1 and "windows" or (uname.sysname == "Darwin" and "darwin" or uname.sysname:lower())
   local architectures = {
     x86_64 = "amd64",
     amd64 = "amd64",
@@ -41,9 +41,10 @@ function M.resolve_command(configured)
   end
 
   local os_name, architecture = platform()
+  local suffix = os_name == "windows" and ".exe" or ""
   local candidates = {
-    plugin_root() .. "/bin/eiwa-agent-" .. os_name .. "-" .. architecture,
-    plugin_root() .. "/bin/eiwa-agent",
+    plugin_root() .. "/bin/eiwa-agent-" .. os_name .. "-" .. architecture .. suffix,
+    plugin_root() .. "/bin/eiwa-agent" .. suffix,
   }
   for _, candidate in ipairs(candidates) do
     if executable(candidate) then
@@ -54,7 +55,7 @@ function M.resolve_command(configured)
   return nil
 end
 
-function M.start(configured, handlers)
+function M.start(configured, handlers, api)
   if handle then
     return true
   end
@@ -82,6 +83,12 @@ function M.start(configured, handlers)
   end)
 
   handle = vim.system(command, {
+    env = api and {
+      EIWA_API_URL = api.endpoint,
+      EIWA_API_TIMEOUT = tostring(api.timeout) .. "s",
+      EIWA_API_STYLE = api.style,
+      EIWA_API_GLOSSARY = vim.json.encode(next(api.glossary) and api.glossary or vim.empty_dict()),
+    } or nil,
     stdin = true,
     text = true,
     stdout = function(err, data)

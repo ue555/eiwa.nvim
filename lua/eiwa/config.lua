@@ -2,6 +2,12 @@ local M = {}
 
 local defaults = {
   command = nil,
+  api = {
+    endpoint = "http://127.0.0.1:8000/translate",
+    timeout = 90,
+    style = "source",
+    glossary = {},
+  },
   window = {
     position = "float",
     width = 0.8,
@@ -31,6 +37,13 @@ function M.setup(opts)
   opts = opts or {}
   assert(type(opts) == "table", "eiwa setup options must be a table")
   local values = vim.tbl_deep_extend("force", vim.deepcopy(defaults), opts)
+  assert(type(values.api.endpoint) == "string" and values.api.endpoint:match("^https?://"), "api.endpoint must be an HTTP or HTTPS URL")
+  assert(type(values.api.timeout) == "number" and values.api.timeout > 0, "api.timeout must be positive seconds")
+  assert(({ source = true, polite = true, plain = true })[values.api.style], "api.style must be source, polite, or plain")
+  assert(type(values.api.glossary) == "table", "api.glossary must be a table")
+  for term, translation in pairs(values.api.glossary) do
+    assert(type(term) == "string" and type(translation) == "string", "api.glossary must contain string keys and values")
+  end
 
   local positions = { float = true, right = true, bottom = true, tab = true }
   assert(positions[values.window.position], "window.position must be float, right, bottom, or tab")

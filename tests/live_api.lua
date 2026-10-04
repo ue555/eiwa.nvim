@@ -1,0 +1,20 @@
+-- Requires the local eiwa API. Run from the plugin root with minimal_init.lua.
+local eiwa = require("eiwa")
+local process = require("eiwa.process")
+local ok, err = xpcall(function()
+  assert(process.resolve_command(nil), "Windows agent must be discovered automatically")
+  eiwa.setup({ api = { glossary = { ["working tree"] = "作業ツリー" } } })
+  eiwa.open()
+  assert(eiwa.submit("Run `git status` to inspect the working tree."))
+  assert(vim.wait(90000, function() return eiwa.get_status() == "idle" or eiwa.get_status() == "error" end, 20), "translation timed out")
+  assert(eiwa.get_status() == "idle", vim.inspect(eiwa.get_messages()))
+  local messages = eiwa.get_messages()
+  local translated = messages[#messages].content
+  assert(translated:find("作業ツリー", 1, true), translated)
+  assert(translated:find("`git status`", 1, true), translated)
+  print("Live Neovim translation: " .. translated)
+  eiwa.close()
+  eiwa.shutdown()
+end, debug.traceback)
+if not ok then io.stderr:write(err .. "\n"); vim.cmd("cquit 1") end
+vim.defer_fn(function() vim.cmd("qa!") end, 100)

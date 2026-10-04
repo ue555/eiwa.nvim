@@ -45,7 +45,7 @@ assert_equal(2, #session.get_messages(), "session must enforce its history limit
 session.clear()
 
 local root = vim.fn.getcwd()
-local agent = root .. "/bin/eiwa-agent"
+local agent = root .. "/bin/eiwa-agent" .. (vim.fn.has("win32") == 1 and ".exe" or "")
 local initial_listed_buffers = #vim.tbl_filter(function(buffer)
   return vim.bo[buffer].buflisted
 end, vim.api.nvim_list_bufs())
@@ -56,7 +56,7 @@ assert_equal(false, invalid_height, "fractional input heights must be rejected")
 
 for _, position in ipairs({ "float", "right", "bottom", "tab" }) do
   eiwa.setup({
-    command = { agent, "serve" },
+    command = { agent, "serve", "--provider", "placeholder" },
     window = { position = position },
   })
   eiwa.open()
@@ -70,7 +70,7 @@ for _, position in ipairs({ "float", "right", "bottom", "tab" }) do
 end
 
 eiwa.setup({
-  command = { agent, "serve" },
+  command = { agent, "serve", "--provider", "placeholder" },
   window = { position = "float" },
 })
 eiwa.open()
@@ -86,7 +86,7 @@ assert_equal(1, #windows_with_filetype("eiwa-input"), "reopen must create one in
 eiwa.close()
 
 eiwa.setup({
-  command = { agent, "serve" },
+  command = { agent, "serve", "--provider", "placeholder" },
   window = { position = "tab" },
 })
 eiwa.open()
@@ -96,7 +96,7 @@ assert_equal(true, closed_last_tab, "closing Eiwa must work when its tab is the 
 assert_equal(false, ui.is_open())
 
 eiwa.setup({
-  command = { agent, "serve" },
+  command = { agent, "serve", "--provider", "placeholder" },
   window = { position = "float" },
   history = { max_messages = 100 },
 })

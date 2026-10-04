@@ -2,11 +2,54 @@
 
 > [!WARNING]
 > **このプラグインは現在開発中です。** API、設定、動作は予告なく変更される
-> 可能性があります。翻訳機能はまだ実装されていません。
+> 可能性があります。
 
 英語から日本語への翻訳を目的とした、Neovimネイティブの対話UIです。
-現段階では翻訳Providerを実装せず、UI、セッション、Goプロセス、
-ストリーミング通信、キャンセルの基盤までを実装しています。
+Goバックエンドから英日翻訳HTTP APIを呼び出し、日本語を履歴に表示します。
+既定の接続先は `http://127.0.0.1:8000/translate` です。
+
+## このPCのローカル翻訳APIと連携する
+
+Windows用バックエンドはビルド済みです。再ビルドする場合：
+
+```powershell
+Set-Location 'C:\Users\zeroz\dev\eiwa.nvim'
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1
+```
+
+翻訳APIが停止している場合は、別途起動してください。APIが既に起動中なら不要です。
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\zeroz\ai\eiwa\scripts\start_background_api.ps1
+```
+
+lazy.nvimでは、調整したローカルのプラグインを指定します。
+
+```lua
+{
+  dir = "C:/Users/zeroz/dev/eiwa.nvim",
+  name = "eiwa.nvim",
+  config = function()
+    require("eiwa").setup({
+      api = {
+        endpoint = "http://127.0.0.1:8000/translate",
+        timeout = 90, -- 秒
+        style = "source", -- source / polite / plain
+        glossary = { ["working tree"] = "作業ツリー" },
+      },
+    })
+  end,
+}
+```
+
+`:Eiwa` で開き、英文を入力してEnterを押すと訳文が表示されます。
+`require("eiwa").submit("English text")` からも送信できます。
+別のプラグイン管理方式では、このディレクトリをruntimepathへ登録して
+`require("eiwa").setup()` を呼び出してください。既定設定だけでもローカルAPIに接続します。
+
+APIは一括応答のため、生成完了後に全文を表示します。Ctrl+CでHTTP待機とUIの要求を中断できますが、
+API側のGPU計算が完了するまでは次の要求が503になる場合があります。設定変更はNeovim再起動後に反映されます。
+NeovimからはGoが通信するので、ブラウザー用のCORS設定は不要です。
 
 ## 機能
 
@@ -104,8 +147,15 @@ scripts/build.sh
 scripts/build.sh --all
 ```
 
-翻訳機能の代わりに、現段階では
-`Translation backend is not implemented yet.`と表示します。
+Goバックエンドは `POST /translate` に `text`、`style`、`glossary` を送り、
+応答の `translation` を表示します。接続失敗、タイムアウト、APIのエラーを履歴に表示します。
+CLIでは `eiwa-agent serve --endpoint URL --timeout 90s --style polite --glossary '{"term":"訳語"}'`
+を利用できます。UI開発用の仮応答は `--provider placeholder` で明示的に選択できます。
+
+検証：`go test -timeout 20s ./...`、
+`nvim --headless -u tests/minimal_init.lua -l tests/run.lua`。
+起動中のローカルAPIとの実通信検証は
+`nvim --headless -u tests/minimal_init.lua -l tests/live_api.lua`。
 
 ## ライセンス
 
