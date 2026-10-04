@@ -1,8 +1,6 @@
 # eiwa.nvim
 
-> [!WARNING]
-> **This plugin is under active development.** Its API, configuration, and
-> behavior may change without notice.
+[日本語版 README](README_ja.md)
 
 A native Neovim conversation UI intended for English-to-Japanese translation.
 The Go agent connects to an English-to-Japanese HTTP API. The default endpoint
@@ -93,12 +91,12 @@ require("eiwa").setup({
 
 ## Commands
 
-| Command | Description |
-|---|---|
-| `:Eiwa` | Open or close the interface |
-| `:EiwaClose` | Close the interface and retain its history |
-| `:EiwaClear` | Clear the current history |
-| `:EiwaCancel` | Cancel the active request |
+| Command           | Description                                 |
+| ----------------- | ------------------------------------------- |
+| `:Eiwa`           | Open or close the interface                 |
+| `:EiwaClose`      | Close the interface and retain its history  |
+| `:EiwaClear`      | Clear the current history                   |
+| `:EiwaCancel`     | Cancel the active request                   |
 | `:EiwaNewSession` | Cancel the active request and clear history |
 
 In the input area, press `Enter` to submit, `Ctrl+C` to cancel, and `Esc` to
